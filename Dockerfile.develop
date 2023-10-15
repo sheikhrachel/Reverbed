@@ -1,0 +1,14 @@
+FROM public.ecr.aws/docker/library/golang:1.21 as builder
+
+WORKDIR /app
+COPY . .
+
+# Auto restart
+RUN go install github.com/cosmtrek/air@latest
+
+# This is your actual go file
+RUN go build -o /bin/main main.go
+
+EXPOSE 8080
+
+ENTRYPOINT air -c .air.toml

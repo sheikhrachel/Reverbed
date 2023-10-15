@@ -1,0 +1,5 @@
+[build]
+cmd = "go build -o /bin/main main.go"
+bin = "/bin/main"
+include_ext = ["go"]
+exclude_dir = ["swaggerui"]

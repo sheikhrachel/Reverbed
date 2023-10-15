@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head><title>Reverbed</title></head>
+<body>
+<h1>Reverbed</h1>
+<h4>By: <a href="https://github.com/sheikhrachel">Rachel</a></h4>
+<p>Upload an MP3 file to get started</p>
+<form id="uploadForm" enctype="multipart/form-data"><input type="file" id="mp3File" accept=".mp3"></form>
+<audio id="audio" controls></audio>
+<label>Start Time: </label><label for="startTime"></label><input type="number" id="startTime" min="0" value="0">
+<label>End Time: </label><label for="endTime"></label><input type="number" id="endTime" min="0" value="30">
+<button id="slowFilter">Slow Filter</button>
+<script src="main.js"></script>
+</body>
+</html>

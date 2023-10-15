@@ -1,0 +1,30 @@
+{
+  "components": {
+    "schemas": {}
+  },
+  "info": {
+    "contact": {
+      "email": "sheikhrachel97@gmail.com",
+      "name": "Rachel Sheikh",
+      "url": "https://github.com/sheikhrachel/reverbed"
+    },
+    "description": "This is the API documentation for the reverbed Service API: [github repo](https://github.com/sheikhrachel/reverbed)",
+    "title": "reverbed Service API documentation",
+    "version": "1.0.0"
+  },
+  "openapi": "3.0.1",
+  "paths": {
+    "/": {
+      "$ref": "./paths/health_check.json"
+    },
+    "/health": {
+      "$ref": "./paths/health_check.json"
+    }
+  },
+  "servers": [
+    {
+      "description": "Local server",
+      "url": "http://localhost:8080/"
+    }
+  ]
+}

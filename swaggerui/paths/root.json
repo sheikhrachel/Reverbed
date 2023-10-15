@@ -1,0 +1,42 @@
+{
+  "get": {
+    "description": "Returns 'health' as a health check mechanism",
+    "parameters": [],
+    "responses": {
+      "200": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "string"
+            }
+          }
+        },
+        "description": "OK"
+      },
+      "408": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "string"
+            }
+          }
+        },
+        "description": "Request Timeout"
+      },
+      "429": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "string"
+            }
+          }
+        },
+        "description": "Too Many Requests"
+      }
+    },
+    "summary": "the root response of the server",
+    "tags": [
+      "Health Check"
+    ]
+  }
+}
