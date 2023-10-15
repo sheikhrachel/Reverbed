@@ -4,6 +4,11 @@ document.addEventListener("DOMContentLoaded", function() {
     const startTimeInput = document.getElementById("startTime");
     const endTimeInput = document.getElementById("endTime");
     const slowFilterButton = document.getElementById("slowFilter");
+    const speedUpFilterButton = document.getElementById("speedUpFilter");
+    const reverbFilterButton = document.getElementById("reverbFilter");
+    const reverseFilterButton = document.getElementById("reverseFilter");
+    const pitchUpFilterButton = document.getElementById("pitchUpFilter");
+    const pitchDownFilterButton = document.getElementById("pitchDownFilter");
     let selectedFile;
     let startTime = 0;
     let endTime = 30;
@@ -29,13 +34,18 @@ document.addEventListener("DOMContentLoaded", function() {
     speedUpFilterButton.addEventListener("click", async function() {
         await sendMP3File(selectedFile, audio,1);
     });
-    reverbButton.addEventListener("click", async function() {
+    reverbFilterButton.addEventListener("click", async function() {
         await sendMP3File(selectedFile, audio,2);
     });
-    reverseButton.addEventListener("click", async function() {
+    reverseFilterButton.addEventListener("click", async function() {
         await sendMP3File(selectedFile, audio,3);
     });
-
+    pitchUpFilterButton.addEventListener("click", async function() {
+        await sendMP3File(selectedFile, audio,4);
+    });
+    pitchDownFilterButton.addEventListener("click", async function() {
+        await sendMP3File(selectedFile, audio,5);
+    });
 });
 
 async function sendMP3File(selectedFile, audio, editType) {
