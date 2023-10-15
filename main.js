@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", function() {
-    const uploadForm = document.getElementById("uploadForm");
     const mp3FileInput = document.getElementById("mp3File");
     const audio = document.getElementById("audio");
     const startTimeInput = document.getElementById("startTime");
@@ -25,35 +24,46 @@ document.addEventListener("DOMContentLoaded", function() {
         if (audio.currentTime > endTime) { audio.currentTime = startTime; audio.pause() }
     });
     slowFilterButton.addEventListener("click", async function() {
-        if (!selectedFile) {
-            console.log("No file selected");
-            return;
-        }
-        const formData = new FormData();
-        formData.append("file", selectedFile, "clipped_audio.mp3");
-        formData.append("startTime", startTime.toString());
-        formData.append("endTime", endTime.toString());
-        formData.append("Content-Type", "audio/mpeg");
-        try {
-            const response = await fetch("http://localhost:8080/edit_track/0", {
-                method: "POST",
-                body: formData,
-            });
-            if (response.ok) {
-                console.log("Edit successful");
-                // Print details about the processed file
-                const contentDisposition = response.headers.get("Content-Disposition");
-                console.log("Content-Disposition:", contentDisposition);
-                const contentLength = response.headers.get("Content-Length");
-                console.log("Content-Length:", contentLength);
-                const contentType = response.headers.get("Content-Type");
-                console.log("Content-Type:", contentType);
-            } else {
-                console.log("Edit failed");
-                console.log(response);
-            }
-        } catch (err) {
-            console.log("Error: ", err);
-        }
+        await sendMP3File(selectedFile, audio,0);
     });
+    speedUpFilterButton.addEventListener("click", async function() {
+        await sendMP3File(selectedFile, audio,1);
+    });
+    reverbButton.addEventListener("click", async function() {
+        await sendMP3File(selectedFile, audio,2);
+    });
+    reverseButton.addEventListener("click", async function() {
+        await sendMP3File(selectedFile, audio,3);
+    });
+
 });
+
+async function sendMP3File(selectedFile, audio, editType) {
+    if (!selectedFile) {
+        console.log("No file selected");
+        return;
+    }
+    const formData = new FormData();
+    formData.append("file", selectedFile, "clipped_audio.mp3");
+    formData.append("Content-Type", "audio/mpeg");
+    try {
+        const response = await fetch("http://localhost:8080/edit_track/" + editType, {
+            method: "POST",
+            body: formData,
+        });
+        if (response.ok) {
+            console.log("Edit successful");
+            const blob = await response.blob();
+            audio.src = URL.createObjectURL(blob);
+            const contentLength = response.headers.get("Content-Length");
+            console.log("Content-Length:", contentLength);
+            const contentType = response.headers.get("Content-Type");
+            console.log("Content-Type:", contentType);
+        } else {
+            console.log("Edit failed");
+            console.log(response);
+        }
+    } catch (err) {
+        console.log("Error: ", err);
+    }
+}

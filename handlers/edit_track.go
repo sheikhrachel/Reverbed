@@ -3,11 +3,9 @@ package handlers
 import (
 	"io"
 	"mime/multipart"
-	"os"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	timeout "github.com/s-wijaya/gin-timeout"
 
 	"github.com/sheikhrachel/reverbed/api_common/call"
@@ -36,7 +34,10 @@ func (h *Handler) EditTrack(c *gin.Context) {
 			cc.InfoF("Error editing audio: %s", err.Error())
 			return StatusInternalServerError, err.Error()
 		}
-		return StatusOK, EditTrackResponse{EditedAudio: editedAudio}
+		defer editedAudio.Close()
+		c.Header("Content-Type", "audio/mpeg")
+		io.Copy(c.Writer, editedAudio)
+		return StatusOK, nil
 	})
 }
 
@@ -44,30 +45,10 @@ func (h *Handler) editAudio(
 	cc call.Call,
 	editType model.EditType,
 	mp3File *multipart.FileHeader,
-) (mp3bytes []byte, err error) {
-	//mp3File.Header.Set("Content-Type", "audio/mpeg")
-	file, err := mp3File.Open()
-	if errutil.HandleError(cc, err) {
-		return nil, err
-	}
-	defer file.Close()
-	mp3Bytes, err := io.ReadAll(file)
-	if errutil.HandleError(cc, err) {
-		return nil, err
-	}
-	testFile, err := os.Create("testfile.mp3")
-	if errutil.HandleError(cc, err) {
-		return nil, err
-	}
-	defer testFile.Close()
-	testFile.Write(mp3Bytes)
+) (file multipart.File, err error) {
 	switch editType {
 	case model.EditTypeSlowed, model.EditTypeSpedUp:
-		return h.reverbedService.SpeedFilter(cc, editType, &mp3Bytes, uuid.New())
+		return h.reverbedService.SpeedFilter(cc, editType, mp3File)
 	}
-	return mp3Bytes, nil
-}
-
-type EditTrackResponse struct {
-	EditedAudio []byte `json:"edited_audio"`
+	return file, nil
 }

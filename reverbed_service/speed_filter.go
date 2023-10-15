@@ -1,9 +1,9 @@
 package reverbed_service
 
 import (
-	"bytes"
 	"errors"
 	"io"
+	"mime/multipart"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -16,55 +16,56 @@ import (
 	"github.com/sheikhrachel/reverbed/model"
 )
 
-const (
-	slowFilter   = "atempo=0.85"
-	spedUpFilter = "atempo=2.0"
-)
-
-func (r *ReverbedService) SpeedFilter(cc call.Call, editType model.EditType, fileBytes *[]byte, uniqueID uuid.UUID) (mp3bytes []byte, err error) {
-	if fileBytes == nil || len(*fileBytes) == 0 {
+func (r *ReverbedService) SpeedFilter(
+	cc call.Call,
+	editType model.EditType,
+	MP3File *multipart.FileHeader,
+) (modifiedMP3File multipart.File, err error) {
+	if MP3File == nil {
 		return nil, errors.New("no file provided")
 	}
-	cc.InfoF("Editing audio with type: %s", editType)
-	cc.InfoF("File bytes: %d", len(*fileBytes))
-	decoder, err := mp3.NewDecoder(bytes.NewReader(*fileBytes))
-	if errutil.HandleError(cc, err) {
-		return nil, err
-	}
 	var (
-		tempDir, outputDir = generateUniqueDirs(uniqueID)
-		tempWavFilePath    = filepath.Join(tempDir, "temp_audio.wav")
+		file               multipart.File
+		tempDir, outputDir = generateUniqueDirs()
+		tempMP3FilePath    = filepath.Join(tempDir, "temp_audio.mp3")
 		outputMp3FilePath  = filepath.Join(outputDir, "output_audio.mp3")
-		filter             string
+		filter             = editType.GetFilter()
 	)
 	defer os.RemoveAll(tempDir)
 	defer os.RemoveAll(outputDir)
-	tempWavFile, err := os.Create(tempWavFilePath)
+	file, err = MP3File.Open()
 	if errutil.HandleError(cc, err) {
+		cc.InfoF("Error opening mp3 file: %+v", err)
 		return nil, err
 	}
-	defer tempWavFile.Close()
-	writeTempWavFile(cc, tempWavFile, decoder)
+	defer file.Close()
+	tempMP3File, err := os.Create(tempMP3FilePath)
+	if errutil.HandleError(cc, err) {
+		cc.InfoF("Error creating temp mp3 file: %+v", err)
+		return nil, err
+	}
+	defer tempMP3File.Close()
+	if _, err = io.Copy(tempMP3File, file); errutil.HandleError(cc, err) {
+		cc.InfoF("Error copying mp3 file to temp mp3 file: %+v", err)
+		return nil, err
+	}
 	outputMp3File, err := os.Create(outputMp3FilePath)
 	if errutil.HandleError(cc, err) {
+		cc.InfoF("Error creating output mp3 file: %+v", err)
 		return nil, err
 	}
-	defer outputMp3File.Close()
-	switch editType {
-	case model.EditTypeSlowed:
-		filter = slowFilter
-	case model.EditTypeSpedUp:
-		filter = spedUpFilter
-	}
-	ffmpegHelpCmd := exec.Command("ffmpeg", "-h")
-	if err = ffmpegHelpCmd.Run(); errutil.HandleError(cc, err) {
+	ffmpegCmd := exec.Command("ffmpeg", "-i", tempMP3FilePath, "-filter:a", filter, "-y", outputMp3FilePath)
+	bytesOut, err := ffmpegCmd.CombinedOutput()
+	if errutil.HandleError(cc, err) {
+		cc.InfoF("Error running ffmpeg command: bytes: %+v, err: %+v", string(bytesOut), err)
+		outputMp3File.Close()
 		return nil, err
 	}
-	ffmpegCmd := exec.Command("ffmpeg", "-i", tempWavFilePath, "-filter:a", filter, "-y", outputMp3FilePath)
-	if err = ffmpegCmd.Run(); errutil.HandleError(cc, err) {
-		return nil, err
-	}
-	return os.ReadFile(outputMp3FilePath)
+	cc.InfoF("Successfully ran ffmpeg command: %s", string(bytesOut))
+	//if err = ffmpegCmd.Run(); errutil.HandleError(cc, err) {
+	//	return nil, err
+	//}
+	return outputMp3File, nil
 }
 
 func writeTempWavFile(cc call.Call, tempWavFile *os.File, decoder *mp3.Decoder) {
@@ -92,9 +93,10 @@ func writeTempWavFile(cc call.Call, tempWavFile *os.File, decoder *mp3.Decoder) 
 }
 
 // Generate unique directory names based on a unique identifier.
-func generateUniqueDirs(uniqueID uuid.UUID) (tempDir, outputDir string) {
-	tempDir = "temp_audio_" + uniqueID.String()
-	outputDir = "output_audio_" + uniqueID.String()
+func generateUniqueDirs() (tempDir, outputDir string) {
+	uniqueID := uuid.New().String()
+	tempDir = "temp_audio_" + uniqueID
+	outputDir = "output_audio_" + uniqueID
 	os.MkdirAll(tempDir, os.ModePerm)
 	os.MkdirAll(outputDir, os.ModePerm)
 	return tempDir, outputDir
