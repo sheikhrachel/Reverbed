@@ -24,5 +24,5 @@ func GetEditType(i int) EditType {
 }
 
 func (e EditType) GetFilter() string {
-	return [...]string{"atempo=0.85", "atempo=2.0", "aecho=0.8:0.9:1000:0.3", "areverse", "asetrate=44100*0.9", "asetrate=44100*1.1"}[e]
+	return [...]string{"atempo=0.8", "atempo=2.0", "aecho=0.8:0.75:150:0.25", "areverse", "asetrate=44100*1.25", "asetrate=44100*0.75"}[e]
 }
