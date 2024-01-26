@@ -6,7 +6,7 @@ require (
 	github.com/aws/aws-sdk-go v1.50.4
 	github.com/gin-contrib/cors v1.5.0
 	github.com/gin-gonic/gin v1.9.1
-	github.com/google/uuid v1.3.1
+	github.com/google/uuid v1.6.0
 	github.com/integralist/go-elasticache v0.0.0-20190122104721-fb0aee05cd4e
 	github.com/s-wijaya/gin-timeout v0.1.1
 	github.com/smarty/assertions v1.15.1
