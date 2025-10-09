@@ -1,6 +1,6 @@
 module github.com/sheikhrachel/reverbed
 
-go 1.20
+go 1.21
 
 require (
 	github.com/aws/aws-sdk-go v1.50.4
@@ -9,7 +9,7 @@ require (
 	github.com/google/uuid v1.3.1
 	github.com/integralist/go-elasticache v0.0.0-20190122104721-fb0aee05cd4e
 	github.com/s-wijaya/gin-timeout v0.1.1
-	github.com/smarty/assertions v1.15.1
+	github.com/smarty/assertions v1.16.0
 )
 
 require (
